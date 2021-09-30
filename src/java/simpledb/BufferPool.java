@@ -26,6 +26,8 @@ public class BufferPool {
     constructor instead. */
     public static final int DEFAULT_PAGES = 50;
 
+    private HeapPage[] heapPages;
+
     /**
      * Creates a BufferPool that caches up to numPages pages.
      *
@@ -33,6 +35,7 @@ public class BufferPool {
      */
     public BufferPool(int numPages) {
         // some code goes here
+        heapPages = new HeapPage[numPages];
     }
     
     public static int getPageSize() {
