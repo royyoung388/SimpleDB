@@ -19,8 +19,8 @@ import java.util.UUID;
  * @Threadsafe
  */
 public class Catalog {
-    private ArrayList<DbFile> dbFiles;
-    private ArrayList<String> names, pkeyFileds;
+    private final ArrayList<DbFile> dbFiles;
+    private final ArrayList<String> names, pkeyFields;
 
     /**
      * Constructor.
@@ -30,14 +30,14 @@ public class Catalog {
         // some code goes here
         dbFiles = new ArrayList<DbFile>();
         names = new ArrayList<String>();
-        pkeyFileds = new ArrayList<String>();
+        pkeyFields = new ArrayList<String>();
     }
 
     /**
      * Add a new table to the catalog.
      * This table's contents are stored in the specified DbFile.
      *
-     * @param file      the contents of the table to add;  file.getId() is the identfier of
+     * @param file      the contents of the table to add;  file.getId() is the identifier of
      *                  this file/tupledesc param for the calls getTupleDesc and getFile
      * @param name      the name of the table -- may be an empty string.  May not be null.  If a name
      *                  conflict exists, use the last table to be added as the table for a given name.
@@ -45,9 +45,25 @@ public class Catalog {
      */
     public void addTable(DbFile file, String name, String pkeyField) {
         // some code goes here
+        if (name.length() > 0 && names.contains(name)) {
+            int index = names.indexOf(name);
+            dbFiles.set(index, file);
+            pkeyFields.set(index, pkeyField);
+            return;
+        }
+
+        for (int i = 0; i < dbFiles.size(); i++) {
+            if (dbFiles.get(i).getId() == file.getId()) {
+                dbFiles.set(i, file);
+                names.set(i, name);
+                pkeyFields.set(i, pkeyField);
+                return;
+            }
+        }
+
         dbFiles.add(file);
         names.add(name);
-        pkeyFileds.add(pkeyField);
+        pkeyFields.add(pkeyField);
     }
 
     public void addTable(DbFile file, String name) {
@@ -116,7 +132,7 @@ public class Catalog {
         // some code goes here
         for (int i = 0; i < dbFiles.size(); i++)
             if (dbFiles.get(i).getId() == tableid)
-                return pkeyFileds.get(i);
+                return pkeyFields.get(i);
 
         throw new NoSuchElementException("Not found the primary key in table with id: " + tableid);
     }
@@ -131,7 +147,11 @@ public class Catalog {
 
     public String getTableName(int id) {
         // some code goes here
-        return null;
+        for (int i = 0; i < dbFiles.size(); i++)
+            if (dbFiles.get(i).getId() == id)
+                return names.get(i);
+
+        throw new NoSuchElementException("Not found the name in table with id: " + id);
     }
 
     /**
@@ -139,6 +159,9 @@ public class Catalog {
      */
     public void clear() {
         // some code goes here
+        dbFiles.clear();
+        names.clear();
+        pkeyFields.clear();
     }
 
     /**
