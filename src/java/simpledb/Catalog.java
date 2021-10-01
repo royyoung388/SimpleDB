@@ -4,10 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * The Catalog keeps track of all available tables in the database and their
@@ -19,8 +16,9 @@ import java.util.UUID;
  * @Threadsafe
  */
 public class Catalog {
-    private final ArrayList<DbFile> dbFiles;
-    private final ArrayList<String> names, pkeyFields;
+    private final HashMap<Integer, DbFile> id2file;
+    private final HashMap<Integer, String> id2name, id2pkey;
+    private final HashMap<String, Integer> name2id;
 
     /**
      * Constructor.
@@ -28,9 +26,10 @@ public class Catalog {
      */
     public Catalog() {
         // some code goes here
-        dbFiles = new ArrayList<DbFile>();
-        names = new ArrayList<String>();
-        pkeyFields = new ArrayList<String>();
+        id2file = new HashMap<>();
+        id2name = new HashMap<>();
+        id2pkey = new HashMap<>();
+        name2id = new HashMap<>();
     }
 
     /**
@@ -45,25 +44,22 @@ public class Catalog {
      */
     public void addTable(DbFile file, String name, String pkeyField) {
         // some code goes here
-        if (name.length() > 0 && names.contains(name)) {
-            int index = names.indexOf(name);
-            dbFiles.set(index, file);
-            pkeyFields.set(index, pkeyField);
-            return;
+        int id = file.getId();
+
+        // same name but different id
+        if (name2id.containsKey(name) && id != name2id.get(name)) {
+            id2file.remove(id);
+            id2name.remove(id);
+            id2pkey.remove(id);
+        } else if (id2name.containsKey(id) && !name.equals(id2name.get(id))) {
+            // same id but different name
+            name2id.remove(id2name.get(id));
         }
 
-        for (int i = 0; i < dbFiles.size(); i++) {
-            if (dbFiles.get(i).getId() == file.getId()) {
-                dbFiles.set(i, file);
-                names.set(i, name);
-                pkeyFields.set(i, pkeyField);
-                return;
-            }
-        }
-
-        dbFiles.add(file);
-        names.add(name);
-        pkeyFields.add(pkeyField);
+        id2file.put(id, file);
+        id2name.put(id, name);
+        id2pkey.put(id, pkeyField);
+        name2id.put(name, id);
     }
 
     public void addTable(DbFile file, String name) {
@@ -89,9 +85,8 @@ public class Catalog {
      */
     public int getTableId(String name) throws NoSuchElementException {
         // some code goes here
-        for (int i = 0; i < names.size(); i++)
-            if (names.get(i).equals(name))
-                return dbFiles.get(i).getId();
+        if (name2id.containsKey(name))
+            return name2id.get(name);
 
         throw new NoSuchElementException("No table with name: " + name);
     }
@@ -105,9 +100,8 @@ public class Catalog {
      */
     public TupleDesc getTupleDesc(int tableid) throws NoSuchElementException {
         // some code goes here
-        for (DbFile dbFile : dbFiles)
-            if (dbFile.getId() == tableid)
-                return dbFile.getTupleDesc();
+        if (id2file.containsKey(tableid))
+            return id2file.get(tableid).getTupleDesc();
 
         throw new NoSuchElementException("Not found TupleDesc in table with id: " + tableid);
     }
@@ -121,35 +115,29 @@ public class Catalog {
      */
     public DbFile getDatabaseFile(int tableid) throws NoSuchElementException {
         // some code goes here
-        for (DbFile dbFile : dbFiles)
-            if (dbFile.getId() == tableid)
-                return dbFile;
+        if (id2file.containsKey(tableid))
+            return id2file.get(tableid);
 
         throw new NoSuchElementException("Not found the table with id: " + tableid);
     }
 
     public String getPrimaryKey(int tableid) {
         // some code goes here
-        for (int i = 0; i < dbFiles.size(); i++)
-            if (dbFiles.get(i).getId() == tableid)
-                return pkeyFields.get(i);
+        if (id2pkey.containsKey(tableid))
+            return id2pkey.get(tableid);
 
         throw new NoSuchElementException("Not found the primary key in table with id: " + tableid);
     }
 
     public Iterator<Integer> tableIdIterator() {
         // some code goes here
-        ArrayList<Integer> ids = new ArrayList<>(dbFiles.size());
-        for (DbFile dbFile : dbFiles)
-            ids.add(dbFile.getId());
-        return ids.iterator();
+        return new ArrayList<Integer>(id2file.keySet()).iterator();
     }
 
     public String getTableName(int id) {
         // some code goes here
-        for (int i = 0; i < dbFiles.size(); i++)
-            if (dbFiles.get(i).getId() == id)
-                return names.get(i);
+        if (id2name.containsKey(id))
+            return id2name.get(id);
 
         throw new NoSuchElementException("Not found the name in table with id: " + id);
     }
@@ -159,9 +147,10 @@ public class Catalog {
      */
     public void clear() {
         // some code goes here
-        dbFiles.clear();
-        names.clear();
-        pkeyFields.clear();
+        id2file.clear();
+        id2name.clear();
+        id2pkey.clear();
+        name2id.clear();
     }
 
     /**
