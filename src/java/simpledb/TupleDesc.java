@@ -222,7 +222,7 @@ public class TupleDesc implements Serializable {
         StringBuilder sb = new StringBuilder();
         for (TDItem i : tdItems)
             sb.append(i.toString()).append(",");
-        sb.deleteCharAt(-1);
+        sb.deleteCharAt(sb.length() - 1);
         return sb.toString();
     }
 }

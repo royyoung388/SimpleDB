@@ -25,7 +25,7 @@ public class HeapFileIterator extends AbstractDbFileIterator {
         if (iterator.hasNext())
             return iterator.next();
 
-        if (pageIndex < pageNum) {
+        if (pageIndex < pageNum - 1) {
             pageIndex++;
             open();
             return readNext();
