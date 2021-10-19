@@ -1,7 +1,8 @@
 package simpledb;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * BufferPool manages the reading and writing of pages into memory from
@@ -29,7 +30,7 @@ public class BufferPool {
      */
     public static final int DEFAULT_PAGES = 50;
 
-    private final HashMap<PageId, Page> pid2page;
+    private final LinkedHashMap<PageId, Page> lruCache;
     private final int numPages;
 
     /**
@@ -39,7 +40,7 @@ public class BufferPool {
      */
     public BufferPool(int numPages) {
         // some code goes here
-        pid2page = new HashMap<>(numPages);
+        lruCache = new LinkedHashMap<>(numPages);
         this.numPages = numPages;
     }
 
@@ -75,15 +76,30 @@ public class BufferPool {
     public Page getPage(TransactionId tid, PageId pid, Permissions perm)
             throws TransactionAbortedException, DbException {
         // some code goes here
-        // TODO pid and perm
-        if (pid2page.containsKey(pid))
-            return pid2page.get(pid);
-
-        if (pid2page.size() >= numPages)
-            throw new DbException("Buffer pool is full");
+        // URL cache
+        if (lruCache.containsKey(pid)) {
+            Page value = lruCache.get(pid);
+            lruCache.remove(pid);
+            lruCache.put(pid, value);
+            return value;
+        }
 
         Page page = Database.getCatalog().getDatabaseFile(pid.getTableId()).readPage(pid);
-        pid2page.put(pid, page);
+
+        if (lruCache.size() >= numPages) {
+            PageId key = lruCache.keySet().iterator().next();
+            try {
+                flushPage(key);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            lruCache.remove(key);
+            lruCache.put(pid, page);
+            return page;
+        } else {
+            lruCache.put(pid, page);
+        }
+
         return page;
     }
 
@@ -206,6 +222,10 @@ public class BufferPool {
     private synchronized void flushPage(PageId pid) throws IOException {
         // some code goes here
         // not necessary for lab1
+        Page page = lruCache.get(pid);
+        if (page.isDirty() != null) {
+            Database.getCatalog().getDatabaseFile(pid.getTableId()).writePage(page);
+        }
     }
 
     /**
@@ -214,12 +234,16 @@ public class BufferPool {
     public synchronized void flushPages(TransactionId tid) throws IOException {
         // some code goes here
         // not necessary for lab1|lab2
+        for (PageId pid: lruCache.keySet()) {
+            flushPage(pid);
+        }
     }
 
     /**
      * Discards a page from the buffer pool.
      * Flushes the page to disk to ensure dirty pages are updated on disk.
      */
+    @Deprecated
     private synchronized void evictPage() throws DbException {
         // some code goes here
         // not necessary for lab1
