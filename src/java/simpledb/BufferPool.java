@@ -1,8 +1,8 @@
 package simpledb;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * BufferPool manages the reading and writing of pages into memory from
@@ -87,13 +87,7 @@ public class BufferPool {
         Page page = Database.getCatalog().getDatabaseFile(pid.getTableId()).readPage(pid);
 
         if (lruCache.size() >= numPages) {
-            PageId key = lruCache.keySet().iterator().next();
-            try {
-                flushPage(key);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            lruCache.remove(key);
+            evictPage();
             lruCache.put(pid, page);
             return page;
         } else {
@@ -168,6 +162,14 @@ public class BufferPool {
             throws DbException, IOException, TransactionAbortedException {
         // some code goes here
         // not necessary for lab1
+        ArrayList<Page> dirty = Database.getCatalog().getDatabaseFile(tableId).insertTuple(tid, t);
+        for (Page page : dirty) {
+            page.markDirty(true, tid);
+            if (!lruCache.containsKey(page.getId()) && lruCache.size() >= numPages)
+                evictPage();
+            lruCache.remove(page.getId());
+            lruCache.put(page.getId(), page);
+        }
     }
 
     /**
@@ -186,7 +188,15 @@ public class BufferPool {
     public void deleteTuple(TransactionId tid, Tuple t)
             throws DbException, IOException, TransactionAbortedException {
         // some code goes here
-        // not necessary for lab1
+        int tableId = t.getRecordId().getPageId().getTableId();
+        ArrayList<Page> dirty = Database.getCatalog().getDatabaseFile(tableId).deleteTuple(tid, t);
+        for (Page page : dirty) {
+            page.markDirty(true, tid);
+            if (!lruCache.containsKey(page.getId()) && lruCache.size() >= numPages)
+                evictPage();
+            lruCache.remove(page.getId());
+            lruCache.put(page.getId(), page);
+        }
     }
 
     /**
@@ -197,7 +207,9 @@ public class BufferPool {
     public synchronized void flushAllPages() throws IOException {
         // some code goes here
         // not necessary for lab1
-
+        for (PageId pid : lruCache.keySet()) {
+            flushPage(pid);
+        }
     }
 
     /**
@@ -234,19 +246,21 @@ public class BufferPool {
     public synchronized void flushPages(TransactionId tid) throws IOException {
         // some code goes here
         // not necessary for lab1|lab2
-        for (PageId pid: lruCache.keySet()) {
-            flushPage(pid);
-        }
     }
 
     /**
      * Discards a page from the buffer pool.
      * Flushes the page to disk to ensure dirty pages are updated on disk.
      */
-    @Deprecated
     private synchronized void evictPage() throws DbException {
         // some code goes here
         // not necessary for lab1
+        PageId key = lruCache.keySet().iterator().next();
+        try {
+            flushPage(key);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        lruCache.remove(key);
     }
-
 }
