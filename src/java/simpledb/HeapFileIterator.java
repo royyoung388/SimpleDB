@@ -1,7 +1,6 @@
 package simpledb;
 
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 public class HeapFileIterator extends AbstractDbFileIterator {
     private int pageIndex;

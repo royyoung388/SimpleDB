@@ -1,30 +1,37 @@
-CS660 Project Assignment XX Report
+CS660 Project Assignment PA2 Report
 
 ######################################################################################################
 
-Name1: [Your full name]
-UID1: [UID]
+Name1: Pengchao Yuan
+UID1: U50962567
 
-No Collaboration/
-Name2: [Your colloborator's full name]
-UID2: [UID]
+No Collaboration
 
 ######################################################################################################
 =====================================================================================
 1. Describe any design decisions you made. [Please refer to the lab website for detailed requirements here.]
+` Buffer evict strategy: LRU algorithm. I used a LinkedHashMap to record the page queue. And always remove the top page.
+` Search for duplicate key in leaf. Search the left sibling page if the key is in the most left entry.
+` Split the page. Find the middle entry, move the right entries into new page, copy the middle entry into a new entry, and then insert into parent.
+` Steal from sibling page. Move entries from sibling, until the tow page have almost same quantities. Copy the key of last moved entry to the parent entry.
+` Merge page. Move all entry in left page into right page.
 
 =====================================================================================
 2. Discuss and justify any changes you made to the API.
+No change.
 
 =====================================================================================
 3. Describe any missing or incomplete elements of your code.
+No missing element.
 
 =====================================================================================
 4. Describe how long you spent on the assignment, and whether there was anything you found particularly difficult or confusing.
+About 2 week. The most hard thing is testing and debugging. Because the function test is not comprehensive, it's hard to find potential prombles that will show in system test.
+But for system test, it's difficult to trace the error because of the buffer pool.
 
 =====================================================================================
 5. If you collaborate with someone else, you have to discribe how you split the workload.
-
+No Collaboration
 
 =====================================================================================
 ######################################################################################################
