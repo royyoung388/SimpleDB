@@ -1,17 +1,16 @@
-CS660 Project Assignment XX Report
+CS660 Project Assignment PA2 Report
 
 ######################################################################################################
 
-Name1: [Your full name]
-UID1: [UID]
+Name1: Pengchao Yuan
+UID1: U50962567
 
-No Collaboration/
-Name2: [Your colloborator's full name]
-UID2: [UID]
+No Collaboration
 
 ######################################################################################################
 =====================================================================================
 1. Describe any design decisions you made. [Please refer to the lab website for detailed requirements here.]
+
 
 =====================================================================================
 2. Discuss and justify any changes you made to the API.
@@ -21,6 +20,7 @@ UID2: [UID]
 
 =====================================================================================
 4. Describe how long you spent on the assignment, and whether there was anything you found particularly difficult or confusing.
+One week. split and merge, bufferpool
 
 =====================================================================================
 5. If you collaborate with someone else, you have to discribe how you split the workload.
