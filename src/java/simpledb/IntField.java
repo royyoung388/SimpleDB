@@ -49,7 +49,6 @@ public class IntField implements Field {
      * @see Field#compare
      */
     public boolean compare(Predicate.Op op, Field val) {
-
         IntField iVal = (IntField) val;
 
         switch (op) {

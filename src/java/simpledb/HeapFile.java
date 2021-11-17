@@ -87,6 +87,9 @@ public class HeapFile implements DbFile {
     public void writePage(Page page) throws IOException {
         // some code goes here
         // not necessary for lab1
+        RandomAccessFile raf = new RandomAccessFile(file, "rw");
+        raf.seek((long) page.getId().pageNumber() * BufferPool.getPageSize());
+        raf.write(page.getPageData());
     }
 
     /**
@@ -101,16 +104,43 @@ public class HeapFile implements DbFile {
     public ArrayList<Page> insertTuple(TransactionId tid, Tuple t)
             throws DbException, IOException, TransactionAbortedException {
         // some code goes here
-        return null;
         // not necessary for lab1
+        ArrayList<Page> modified = new ArrayList<>();
+        HeapPage emptyPage = null;
+
+        // find not full page
+        for (int i = 0; i < numPages(); i++) {
+            HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, new HeapPageId(getId(), i), Permissions.READ_ONLY);
+            if (page.getNumEmptySlots() > 0)
+                emptyPage = (HeapPage) Database.getBufferPool().getPage(tid, new HeapPageId(getId(), i), Permissions.READ_WRITE);
+        }
+
+        // can not page with empty slot
+        // create new page
+        if (emptyPage == null) {
+            HeapPage newPage = new HeapPage(new HeapPageId(getId(), numPages()), HeapPage.createEmptyPageData());
+            newPage.insertTuple(t);
+            writePage(newPage);
+            modified.add(newPage);
+        } else {
+            emptyPage.insertTuple(t);
+            modified.add(emptyPage);
+        }
+        return modified;
     }
 
     // see DbFile.java for javadocs
     public ArrayList<Page> deleteTuple(TransactionId tid, Tuple t) throws DbException,
             TransactionAbortedException {
         // some code goes here
-        return null;
         // not necessary for lab1
+        ArrayList<Page> modified = new ArrayList<>();
+
+        HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, t.getRecordId().getPageId(), Permissions.READ_ONLY);
+        page.deleteTuple(t);
+        modified.add(page);
+
+        return modified;
     }
 
     // see DbFile.java for javadocs

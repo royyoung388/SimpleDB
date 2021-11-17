@@ -10,15 +10,23 @@ No Collaboration
 ######################################################################################################
 =====================================================================================
 1. Describe any design decisions you made. [Please refer to the lab website for detailed requirements here.]
+` Join: Simple nested loops join. For each tuple in child 1, join with each tuple in child 2.
+` HashEquiJoin: Simple Hash join. Hash all elements in child 1 by using Map<Field, List<Tuple>>.
+                Then for each element in child 2, use map.get() to get equivalent element.
+` Aggregate: Use HashMap<Field, Integer[]> to store the group value, and aggregate value.
+            In the iterator(), create List<Tuple> according to the HashMap, then return TupleIterator.
 
 =====================================================================================
 2. Discuss and justify any changes you made to the API.
+None.
 
 =====================================================================================
 3. Describe any missing or incomplete elements of your code.
+None.
 
 =====================================================================================
 4. Describe how long you spent on the assignment, and whether there was anything you found particularly difficult or confusing.
+3 days. None.
 
 =====================================================================================
 5. If you collaborate with someone else, you have to discribe how you split the workload.

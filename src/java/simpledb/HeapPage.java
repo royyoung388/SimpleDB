@@ -251,6 +251,11 @@ public class HeapPage implements Page {
     public void deleteTuple(Tuple t) throws DbException {
         // some code goes here
         // not necessary for lab1
+        int id = t.getRecordId().tupleno();
+        if (!isSlotUsed(id) || !t.getRecordId().getPageId().equals(getId()))
+            throw new DbException("Can not find the tuple");
+        tuples[id] = null;
+        markSlotUsed(id, false);
     }
 
     /**
@@ -264,6 +269,20 @@ public class HeapPage implements Page {
     public void insertTuple(Tuple t) throws DbException {
         // some code goes here
         // not necessary for lab1
+        // create new file page
+        if (getNumEmptySlots() <= 0)
+            throw new DbException("The page is full");
+        if (!t.getTupleDesc().equals(td))
+            throw new DbException("TupleDesc is mismatch");
+
+        for (int i = 0; i < numSlots; i++) {
+            if (isSlotUsed(i))
+                continue;
+            t.setRecordId(new RecordId(getId(), i));
+            tuples[i] = t;
+            markSlotUsed(i, true);
+            break;
+        }
     }
 
     /**
@@ -276,6 +295,8 @@ public class HeapPage implements Page {
         // todo tid
         if (dirty)
             this.dirty = tid;
+        else
+            this.dirty = null;
     }
 
     /**
@@ -299,7 +320,6 @@ public class HeapPage implements Page {
                 if ((temp & 1) != 1)
                     count++;
                 temp = temp >> 1;
-
             }
         }
         return count;
@@ -320,7 +340,11 @@ public class HeapPage implements Page {
     private void markSlotUsed(int i, boolean value) {
         // some code goes here
         // not necessary for lab1
-//        header[i / 8 -1] |= 1 << (7 - i % 8);
+        int v = 1 << (i % 8);
+        if (value)
+            header[i / 8] |= v;
+        else
+            header[i / 8] &= ~v;
     }
 
     /**
@@ -329,15 +353,14 @@ public class HeapPage implements Page {
      */
     public Iterator<Tuple> iterator() {
         // some code goes here
-        ArrayList<Tuple> used = new ArrayList<>(tuples.length);
+        ArrayList<Tuple> used = new ArrayList<>(numSlots);
 
-        for (int i = 0; i < tuples.length; i++) {
+        for (int i = 0; i < numSlots; i++) {
             if (isSlotUsed(i)) {
                 used.add(tuples[i]);
             }
         }
         return used.iterator();
     }
-
 }
 
