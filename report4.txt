@@ -1,0 +1,37 @@
+CS660 Project Assignment XX Report
+
+######################################################################################################
+
+Name: Pengchao Yuan
+UID: U50962567
+
+No Collaboration
+
+######################################################################################################
+=====================================================================================
+1. Describe any design decisions you made. [Please refer to the lab website for detailed requirements here.]
+IntHistogram.java: use int[] to record the distribution. And calculate the bucket index of the value through ```(int) Math.floor((v - start) / (double) width)```.
+    In estimateSelectivity(), Need some extra action for special case (value > max or value < min)
+
+TableStats.java: Scan the table to find the max and min. And then Scan the table again to build the histograms and other statistics.
+
+JoinOptimizer.java: Calculate the join cost for equality joins, and range scans. And in orderJoins(), use the algorithm to determine the best order.
+=====================================================================================
+2. Discuss and justify any changes you made to the API.
+None.
+
+=====================================================================================
+3. Describe any missing or incomplete elements of your code.
+None.
+
+=====================================================================================
+4. Describe how long you spent on the assignment, and whether there was anything you found particularly difficult or confusing.
+A week. None.
+
+=====================================================================================
+5. If you collaborate with someone else, you have to discribe how you split the workload.
+No Collaboration
+
+=====================================================================================
+######################################################################################################
+
