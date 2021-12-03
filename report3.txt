@@ -13,8 +13,9 @@ No Collaboration
 ` Join: Simple nested loops join. For each tuple in child 1, join with each tuple in child 2.
 ` HashEquiJoin: Simple Hash join. Hash all elements in child 1 by using Map<Field, List<Tuple>>.
                 Then for each element in child 2, use map.get() to get equivalent element.
-` Aggregate: Use HashMap<Field, Integer[]> to store the group value, and aggregate value.
+` Aggregator: Use HashMap<Field, Integer[]> to store the group value, and aggregate value.
             In the iterator(), create List<Tuple> according to the HashMap, then return TupleIterator.
+` Aggregate: Use aggregator to calculate the group.
 
 =====================================================================================
 2. Discuss and justify any changes you made to the API.
